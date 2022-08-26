@@ -4,6 +4,8 @@
 ## Forked by DammK ##
 - Nice server. But it is **incomplete**. [Official building I3S spec](https://github.com/Esri/i3s-spec/blob/master/docs/1.8/BSL_ReadMe.md)
 - Given a larger translated model (from Autodesk Revit), whole spec is used and many `404 NOT FOUND` is returned. Unfortunately **previous 16 forks** doesn't tackle this problem, hence this fork.
+- Note that **only version 1.x** is supported. 2.0 is not tested.
+- Use [7zFM](https://www.7-zip.org/download.html) to view the files. It supports inline extract and navigate.
 - Maybe I'll send a Pull Request?
 
 ## Original Description ##
