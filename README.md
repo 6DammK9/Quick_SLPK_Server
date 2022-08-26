@@ -1,5 +1,12 @@
-QUICK SLPK SERVER
+# QUICK SLPK SERVER #
 ======================
+
+## Forked by DammK ##
+- Nice server. But it is **incomplete**. [Official building I3S spec](https://github.com/Esri/i3s-spec/blob/master/docs/1.8/BSL_ReadMe.md)
+- Given a larger translated model (from Autodesk Revit), whole spec is used and many `404 NOT FOUND` is returned. Unfortunately **previous 16 forks** doesn't tackle this problem, hence this fork.
+- Maybe I'll send a Pull Request?
+
+## Original Description ##
 
 Minimalist web server engine to publish OGC SceneLayerPackage (.slpk) to Indexed 3d Scene Layer (I3S) web service.
 
