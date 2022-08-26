@@ -3,10 +3,13 @@
 
 ## Forked by Darren ##
 - Added support on `sublayers` under [Official building I3S spec](https://github.com/Esri/i3s-spec/blob/master/docs/1.8/BSL_ReadMe.md)
-- Hardened some URL pattern checking.
 - Note that **only version 1.x** is supported. 2.0 is not tested.
 - Use [7zFM](https://www.7-zip.org/download.html) to view the files. It supports inline extract and navigate.
-- **Performance is awful**. Will rewrite in NodeJS and try to parallelise the REST calls.
+- **Performance is awful**. File lock, single thread etc. Will rewrite in NodeJS and try to parallelise the REST calls.
+
+## Some dull changes ##
+- Hardened some URL pattern checking
+- Removed some static logic, switched to **general error handling**.
 
 ## Original Description ##
 
