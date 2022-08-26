@@ -45,7 +45,8 @@ import os, sys, json, gzip, zipfile
 #User parameter
 host='localhost'
 port=5012
-home=os.path.join(os.path.dirname(os.path.realpath(__file__)),"slpk") #SLPK Folder
+slpkFolder="slpk"
+home=os.path.join(os.path.dirname(os.path.realpath(__file__)),slpkFolder) #SLPK Folder
 
 
 #*********#
@@ -53,7 +54,7 @@ home=os.path.join(os.path.dirname(os.path.realpath(__file__)),"slpk") #SLPK Fold
 #*********#
 
 #List available SLPK
-slpks=[f for f in os.listdir(home) if os.path.splitext(f)[1].lower()==u".slpk"]
+#slpks=[f for f in os.listdir(home) if os.path.splitext(f)[1].lower()==u".slpk"]
 
 def read(f,slpk):
 	"""read gz compressed file from slpk (=zip archive) and output result"""
@@ -91,89 +92,101 @@ app = app()
 
 @app.route('/')
 def list_services():
-	""" List all available SLPK, with LINK to I3S service and Viewer page"""
-	return template('services_list', slpks=slpks)
+	#""" List all available SLPK, with LINK to I3S service and Viewer page"""
+	#return template('services_list', slpks=slpks)
+	IndexJson=dict()
+	IndexJson["slpkPath"]=slpkFolder
+	response.content_type = 'application/json'
+	return json.dumps(IndexJson)
 	
 @app.route('/<slpk>/SceneServer')
 @app.route('/<slpk>/SceneServer/')
 @enable_cors
 def service_info(slpk):
-	""" Service information JSON """
-	if slpk not in slpks: #Get 404 if slpk doesn't exists
-		abort(404, "Can't found SLPK: %s"%slpk)
-	SceneServiceInfo=dict()
-	SceneServiceInfo["serviceName"]=slpk
-	SceneServiceInfo["name"]=slpk
-	SceneServiceInfo["currentVersion"]=10.6
-	SceneServiceInfo["serviceVersion"]="1.6"
-	SceneServiceInfo["supportedBindings"]=["REST"]
-	SceneServiceInfo["layers"] = [json.loads(read("3dSceneLayer.json.gz",slpk))]
-	response.content_type = 'application/json'
-	return json.dumps(SceneServiceInfo)
+	try:
+		SceneServiceInfo=dict()
+		SceneServiceInfo["serviceName"]=slpk
+		SceneServiceInfo["name"]=slpk
+		SceneServiceInfo["currentVersion"]=10.81
+		SceneServiceInfo["serviceVersion"]="1.8"
+		SceneServiceInfo["supportedBindings"]=["REST"]
+		SceneServiceInfo["layers"] = [json.loads(read("3dSceneLayer.json.gz",slpk))]
+		response.content_type = 'application/json'
+		return json.dumps(SceneServiceInfo)
+	except:
+		# Get current system exception
+		ex_type, ex_value, ex_traceback = sys.exc_info()
+		abort(404, ex_value)
 	
 @app.route('/<slpk>/SceneServer/layers/0')
 @app.route('/<slpk>/SceneServer/layers/0/')
 @enable_cors
 def layer_info(slpk):
-	""" Layer information JSON """
-	if slpk not in slpks: #Get 404 if slpk doesn't exists
-		abort(404, "Can't found SLPK: %s"%slpk)
-	SceneLayerInfo=json.loads(read("3dSceneLayer.json.gz",slpk))
-	response.content_type = 'application/json'
-	return json.dumps(SceneLayerInfo)
+	try:
+		SceneLayerInfo=json.loads(read("3dSceneLayer.json.gz",slpk))
+		response.content_type = 'application/json'
+		return json.dumps(SceneLayerInfo)
+	except:
+		# Get current system exception
+		ex_type, ex_value, ex_traceback = sys.exc_info()
+		abort(404, ex_value)
 
 @app.route('/<slpk>/SceneServer/layers/<layer>/sublayers/<sublayer>')
 @app.route('/<slpk>/SceneServer/layers/<layer>/sublayers/<sublayer>/')
 @enable_cors
 def layer_info(slpk,layer,sublayer):
-	""" Layer information JSON """
-	if slpk not in slpks: #Get 404 if slpk doesn't exists
-		abort(404, "Can't found SLPK: %s"%slpk)
-	SubSceneLayerInfo=json.loads(read("sublayers/%s/3dSceneLayer.json.gz"%sublayer,slpk))
-	response.content_type = 'application/json'
-	return json.dumps(SubSceneLayerInfo)
+	try:
+		SubSceneLayerInfo=json.loads(read("sublayers/%s/3dSceneLayer.json.gz"%sublayer,slpk))
+		response.content_type = 'application/json'
+		return json.dumps(SubSceneLayerInfo)
+	except:
+		# Get current system exception
+		ex_type, ex_value, ex_traceback = sys.exc_info()
+		abort(404, ex_value)
 
 @app.route('/<slpk>/SceneServer/layers/<layer>/sublayers/<sublayer>/nodepages/<nodepage>')
 @app.route('/<slpk>/SceneServer/layers/<layer>/sublayers/<sublayer>/nodepages/<nodepage>/')
 @enable_cors
 def layer_info(slpk,layer,sublayer,nodepage):
-	""" Layer information JSON """
-	if slpk not in slpks: #Get 404 if slpk doesn't exists
-		abort(404, "Can't found SLPK: %s"%slpk)
-	SubSceneLayerInfo=json.loads(read("sublayers/%s/nodepages/0.json.gz"%sublayer,slpk))
-	response.content_type = 'application/json'
-	return json.dumps(SubSceneLayerInfo)
+	try:
+		SubSceneLayerInfo=json.loads(read("sublayers/%s/nodepages/%s.json.gz"%(sublayer,nodepage),slpk))
+		response.content_type = 'application/json'
+		return json.dumps(SubSceneLayerInfo)
+	except:
+		# Get current system exception
+		ex_type, ex_value, ex_traceback = sys.exc_info()
+		abort(404, ex_value)
 
 @app.route('/<slpk>/SceneServer/layers/<layer>/sublayers/<sublayer>/nodes/<node>')
 @app.route('/<slpk>/SceneServer/layers/<layer>/sublayers/<sublayer>/nodes/<node>/')
 @enable_cors
 def node_info(slpk,layer,sublayer,node):
-	""" Node information JSON """
-	if slpk not in slpks: #Get 404 if slpk doesn't exists
-		abort(404, "Can't found SLPK: %s"%slpk)
-	NodeIndexDocument=json.loads(read("sublayers/%s/nodes/%s/3dNodeIndexDocument.json.gz"%(sublayer,node),slpk))
-	response.content_type = 'application/json'
-	return json.dumps(NodeIndexDocument)
+	try:
+		NodeIndexDocument=json.loads(read("sublayers/%s/nodes/%s/3dNodeIndexDocument.json.gz"%(sublayer,node),slpk))
+		response.content_type = 'application/json'
+		return json.dumps(NodeIndexDocument)
+	except:
+		# Get current system exception
+		ex_type, ex_value, ex_traceback = sys.exc_info()
+		abort(404, ex_value)
 
 @app.route('/<slpk>/SceneServer/layers/<layer>/sublayers/<sublayer>/nodes/<node>/geometries/<geometry>')
 @app.route('/<slpk>/SceneServer/layers/<layer>/sublayers/<sublayer>/nodes/<node>/geometries/<geometry>/')
 @enable_cors
 def geometry_info(slpk,layer,sublayer,node,geometry):
-	""" Geometry information bin """
-	if slpk not in slpks: #Get 404 if slpk doesn't exists
-		abort(404, "Can't found SLPK: %s"%slpk)
-	response.content_type = 'application/octet-stream; charset=binary'
-	response.content_encoding = 'gzip'
-	return read("sublayers/%s/nodes/%s/geometries/%s.bin.gz"%(sublayer,node,geometry),slpk)
+	try:
+		response.content_type = 'application/octet-stream; charset=binary'
+		response.content_encoding = 'gzip'
+		return read("sublayers/%s/nodes/%s/geometries/%s.bin.gz"%(sublayer,node,geometry),slpk)
+	except:
+		# Get current system exception
+		ex_type, ex_value, ex_traceback = sys.exc_info()
+		abort(404, ex_value)
 
 @app.route('/<slpk>/SceneServer/layers/<layer>/sublayers/<sublayer>/nodes/<node>/textures/0_0')
 @app.route('/<slpk>/SceneServer/layers/<layer>/sublayers/<sublayer>/nodes/<node>/textures/0_0/')
 @enable_cors
 def textures_info(slpk,layer,sublayer,node):
-	""" Texture information JPG """
-	if slpk not in slpks: #Get 404 if slpk doesn't exists
-		abort(404, "Can't found SLPK: %s"%slpk)
-
 	response.headers['Content-Disposition'] = 'attachment; filename="0_0.jpg"'
 	response.content_type = 'image/jpeg'
 	try:
@@ -181,97 +194,102 @@ def textures_info(slpk,layer,sublayer,node):
 	except:
 		try:
 			return read("sublayers/%s/nodes/%s/textures/0_0.bin"%(sublayer,node),slpk)
-		except: 
-			return ""
+		except:
+			# Get current system exception
+			ex_type, ex_value, ex_traceback = sys.exc_info()
+			abort(404, ex_value)
 
 @app.route('/<slpk>/SceneServer/layers/<layer>/sublayers/<sublayer>/nodes/<node>/textures/0_0_1')
 @app.route('/<slpk>/SceneServer/layers/<layer>/sublayers/<sublayer>/nodes/<node>/textures/0_0_1/')
 @enable_cors
 def Ctextures_info(slpk,layer,sublayer,node):
-	""" Compressed texture information """
-	if slpk not in slpks: #Get 404 if slpk doesn't exists
-		abort(404, "Can't found SLPK: %s"%slpk)
 	try:
 		return read("sublayers/%s/nodes/%s/textures/0_0_1.bin.dds.gz"%(sublayer,node),slpk)
 	except:
-		return ""
+		# Get current system exception
+		ex_type, ex_value, ex_traceback = sys.exc_info()
+		abort(404, ex_value)
 
 @app.route('/<slpk>/SceneServer/layers/<layer>/sublayers/<sublayer>/nodes/<node>/features/<feature>')
 @app.route('/<slpk>/SceneServer/layers/<layer>/sublayers/<sublayer>/nodes/<node>/features/<feature>/')
 @enable_cors
 def feature_info(slpk,layer,sublayer,node,feature):
-	""" Feature information JSON """
-	if slpk not in slpks: #Get 404 if slpk doesn't exists
-		abort(404, "Can't found SLPK: %s"%slpk)
-	print("%s")
-	FeatureData=json.loads(read("sublayers/%s/nodes/%s/features/%s.json.gz"%(sublayer,node,feature),slpk))
-	response.content_type = 'application/json'
-	return json.dumps(FeatureData)
+	try:
+		FeatureData=json.loads(read("sublayers/%s/nodes/%s/features/%s.json.gz"%(sublayer,node,feature),slpk))
+		response.content_type = 'application/json'
+		return json.dumps(FeatureData)
+	except:
+		# Get current system exception
+		ex_type, ex_value, ex_traceback = sys.exc_info()
+		abort(404, ex_value)
 
 @app.route('/<slpk>/SceneServer/layers/<layer>/sublayers/<sublayer>/nodes/<node>/shared')
 @app.route('/<slpk>/SceneServer/layers/<layer>/sublayers/<sublayer>/nodes/<node>/shared/')
 @enable_cors
 def shared_info(slpk,layer,sublayer,node):
-	""" Shared node information JSON """
-	if slpk not in slpks: #Get 404 if slpk doesn't exists
-		abort(404, "Can't found SLPK: %s"%slpk)
 	try:
 		Sharedressource=json.loads(read("sublayers/%s/nodes/%s/shared/sharedResource.json.gz"%(sublayer,node),slpk))
 		response.content_type = 'application/json'
 		return json.dumps(Sharedressource)
 	except:
-		return ""
+		# Get current system exception
+		ex_type, ex_value, ex_traceback = sys.exc_info()
+		abort(404, ex_value)
 		
 @app.route('/<slpk>/SceneServer/layers/<layer>/sublayers/<sublayer>/nodes/<node>/attributes/<attribute>/0')
 @app.route('/<slpk>/SceneServer/layers/<layer>/sublayers/<sublayer>/nodes/<node>/attributes/<attribute>/0/')
 @enable_cors
 def attribute_info(slpk,layer,sublayer,node,attribute):
-	""" Attribute information JSON """
-	if slpk not in slpks: #Get 404 if slpk doesn't exists
-		abort(404, "Can't found SLPK: %s"%slpk)
-	return read("sublayers/%s/nodes/%s/attributes/%s/0.bin.gz"%(sublayer,node,attribute),slpk)
+	try:
+		return read("sublayers/%s/nodes/%s/attributes/%s/0.bin.gz"%(sublayer,node,attribute),slpk)
+	except:
+		# Get current system exception
+		ex_type, ex_value, ex_traceback = sys.exc_info()
+		abort(404, ex_value)
 
 @app.route('/<slpk>/SceneServer/layers/<layer>/nodepages/<nodepage>')
 @app.route('/<slpk>/SceneServer/layers/<layer>/nodepages/<nodepage>/')
 @enable_cors
 def layer_info(slpk,layer,nodepage):
-	""" Layer information JSON """
-	if slpk not in slpks: #Get 404 if slpk doesn't exists
-		abort(404, "Can't found SLPK: %s"%slpk)
-	SubSceneLayerInfo=json.loads(read("nodepages/0.json.gz",slpk))
-	response.content_type = 'application/json'
-	return json.dumps(SubSceneLayerInfo)
+	try:
+		SubSceneLayerInfo=json.loads(read("nodepages/0.json.gz",slpk))
+		response.content_type = 'application/json'
+		return json.dumps(SubSceneLayerInfo)
+	except:
+		# Get current system exception
+		ex_type, ex_value, ex_traceback = sys.exc_info()
+		abort(404, ex_value)
 
 @app.route('/<slpk>/SceneServer/layers/<layer>/nodes/<node>')
 @app.route('/<slpk>/SceneServer/layers/<layer>/nodes/<node>/')
 @enable_cors
 def node_info(slpk,layer,node):
-	""" Node information JSON """
-	if slpk not in slpks: #Get 404 if slpk doesn't exists
-		abort(404, "Can't found SLPK: %s"%slpk)
-	NodeIndexDocument=json.loads(read("nodes/%s/3dNodeIndexDocument.json.gz"%node,slpk))
-	response.content_type = 'application/json'
-	return json.dumps(NodeIndexDocument)
+	try:
+		NodeIndexDocument=json.loads(read("nodes/%s/3dNodeIndexDocument.json.gz"%node,slpk))
+		response.content_type = 'application/json'
+		return json.dumps(NodeIndexDocument)
+	except:
+		# Get current system exception
+		ex_type, ex_value, ex_traceback = sys.exc_info()
+		abort(404, ex_value)
 
 @app.route('/<slpk>/SceneServer/layers/<layer>/nodes/<node>/geometries/0')
 @app.route('/<slpk>/SceneServer/layers/<layer>/nodes/<node>/geometries/0/')
 @enable_cors
 def geometry_info(slpk,layer,node):
-	""" Geometry information bin """
-	if slpk not in slpks: #Get 404 if slpk doesn't exists
-		abort(404, "Can't found SLPK: %s"%slpk)
-	response.content_type = 'application/octet-stream; charset=binary'
-	response.content_encoding = 'gzip'
-	return read("nodes/%s/geometries/0.bin.gz"%node,slpk)
+	try:
+		response.content_type = 'application/octet-stream; charset=binary'
+		response.content_encoding = 'gzip'
+		return read("nodes/%s/geometries/0.bin.gz"%node,slpk)
+	except:
+		# Get current system exception
+		ex_type, ex_value, ex_traceback = sys.exc_info()
+		abort(404, ex_value)
 
 @app.route('/<slpk>/SceneServer/layers/<layer>/nodes/<node>/textures/0_0')
 @app.route('/<slpk>/SceneServer/layers/<layer>/nodes/<node>/textures/0_0/')
 @enable_cors
 def textures_info(slpk,layer,node):
-	""" Texture information JPG """
-	if slpk not in slpks: #Get 404 if slpk doesn't exists
-		abort(404, "Can't found SLPK: %s"%slpk)
-
 	response.headers['Content-Disposition'] = 'attachment; filename="0_0.jpg"'
 	response.content_type = 'image/jpeg'
 	try:
@@ -279,63 +297,68 @@ def textures_info(slpk,layer,node):
 	except:
 		try:
 			return read("nodes/%s/textures/0_0.bin"%node,slpk)
-		except: 
-			return ""
+		except:
+			# Get current system exception
+			ex_type, ex_value, ex_traceback = sys.exc_info()
+			abort(404, ex_value)
 
 @app.route('/<slpk>/SceneServer/layers/<layer>/nodes/<node>/textures/0_0_1')
 @app.route('/<slpk>/SceneServer/layers/<layer>/nodes/<node>/textures/0_0_1/')
 @enable_cors
 def Ctextures_info(slpk,layer,node):
-	""" Compressed texture information """
-	if slpk not in slpks: #Get 404 if slpk doesn't exists
-		abort(404, "Can't found SLPK: %s"%slpk)
 	try:
 		return read("nodes/%s/textures/0_0_1.bin.dds.gz"%node,slpk)
 	except:
-		return ""
+		# Get current system exception
+		ex_type, ex_value, ex_traceback = sys.exc_info()
+		abort(404, ex_value)
 
 @app.route('/<slpk>/SceneServer/layers/<layer>/nodes/<node>/features/0')
 @app.route('/<slpk>/SceneServer/layers/<layer>/nodes/<node>/features/0/')
 @enable_cors
 def feature_info(slpk,layer,node):
-	""" Feature information JSON """
-	if slpk not in slpks: #Get 404 if slpk doesn't exists
-		abort(404, "Can't found SLPK: %s"%slpk)
-	print("%s")
-	FeatureData=json.loads(read("nodes/%s/features/0.json.gz"%node,slpk))
-	response.content_type = 'application/json'
-	return json.dumps(FeatureData)
+	try:
+		FeatureData=json.loads(read("nodes/%s/features/0.json.gz"%node,slpk))
+		response.content_type = 'application/json'
+		return json.dumps(FeatureData)
+	except:
+		# Get current system exception
+		ex_type, ex_value, ex_traceback = sys.exc_info()
+		abort(404, ex_value)
 
 @app.route('/<slpk>/SceneServer/layers/<layer>/nodes/<node>/shared')
 @app.route('/<slpk>/SceneServer/layers/<layer>/nodes/<node>/shared/')
 @enable_cors
 def shared_info(slpk,layer,node):
-	""" Shared node information JSON """
-	if slpk not in slpks: #Get 404 if slpk doesn't exists
-		abort(404, "Can't found SLPK: %s"%slpk)
 	try:
 		Sharedressource=json.loads(read("nodes/%s/shared/sharedResource.json.gz"%node,slpk))
 		response.content_type = 'application/json'
 		return json.dumps(Sharedressource)
 	except:
-		return ""
+		# Get current system exception
+		ex_type, ex_value, ex_traceback = sys.exc_info()
+		abort(404, ex_value)
 
 @app.route('/<slpk>/SceneServer/layers/<layer>/nodes/<node>/attributes/<attribute>/0')
 @app.route('/<slpk>/SceneServer/layers/<layer>/nodes/<node>/attributes/<attribute>/0/')
 @enable_cors
 def attribute_info(slpk,layer,node,attribute):
-	""" Attribute information JSON """
-	if slpk not in slpks: #Get 404 if slpk doesn't exists
-		abort(404, "Can't found SLPK: %s"%slpk)
-	return read("nodes/%s/attributes/%s/0.bin.gz"%(node,attribute),slpk)
+	try:
+		return read("nodes/%s/attributes/%s/0.bin.gz"%(node,attribute),slpk)
+	except:
+		# Get current system exception
+		ex_type, ex_value, ex_traceback = sys.exc_info()
+		abort(404, ex_value)
 
 @app.route('/carte/<slpk>')
 @enable_cors
 def carte(slpk):
-	""" Preview data on a 3d globe """
-	if slpk not in slpks: #Get 404 if slpk doesn't exists
-		abort(404, "Can't found SLPK: %s"%slpk)
-	return template('carte', slpk=slpk, url="http://%s:%s/%s/SceneServer/layers/0"%(host,port,slpk))
+	try:
+		return template('carte', slpk=slpk, url="http://%s:%s/%s/SceneServer/layers/0"%(host,port,slpk))
+	except:
+		# Get current system exception
+		ex_type, ex_value, ex_traceback = sys.exc_info()
+		abort(404, ex_value)
 
 #Run server
 app.run(host=host, port=port)
