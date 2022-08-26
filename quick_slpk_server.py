@@ -44,7 +44,7 @@ import os, sys, json, gzip, zipfile
 
 #User parameter
 host='localhost'
-port=8080
+port=5012
 home=os.path.join(os.path.dirname(os.path.realpath(__file__)),"slpk") #SLPK Folder
 
 
@@ -121,6 +121,17 @@ def layer_info(slpk):
 	SceneLayerInfo=json.loads(read("3dSceneLayer.json.gz",slpk))
 	response.content_type = 'application/json'
 	return json.dumps(SceneLayerInfo)
+
+@app.route('/<slpk>/SceneServer/layers/<layer>/sublayers/<sublayer>')
+@app.route('/<slpk>/SceneServer/layers/<layer>/sublayers/<sublayer>/')
+@enable_cors
+def layer_info(slpk,layer,sublayer):
+	""" Layer information JSON """
+	if slpk not in slpks: #Get 404 if slpk doesn't exists
+		abort(404, "Can't found SLPK: %s"%slpk)
+	SubSceneLayerInfo=json.loads(read("sublayers/%s/3dSceneLayer.json.gz"%sublayer,slpk))
+	response.content_type = 'application/json'
+	return json.dumps(SubSceneLayerInfo)
 
 @app.route('/<slpk>/SceneServer/layers/<layer>/nodes/<node>')
 @app.route('/<slpk>/SceneServer/layers/<layer>/nodes/<node>/')
