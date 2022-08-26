@@ -133,6 +133,115 @@ def layer_info(slpk,layer,sublayer):
 	response.content_type = 'application/json'
 	return json.dumps(SubSceneLayerInfo)
 
+@app.route('/<slpk>/SceneServer/layers/<layer>/sublayers/<sublayer>/nodepages/<nodepage>')
+@app.route('/<slpk>/SceneServer/layers/<layer>/sublayers/<sublayer>/nodepages/<nodepage>/')
+@enable_cors
+def layer_info(slpk,layer,sublayer,nodepage):
+	""" Layer information JSON """
+	if slpk not in slpks: #Get 404 if slpk doesn't exists
+		abort(404, "Can't found SLPK: %s"%slpk)
+	SubSceneLayerInfo=json.loads(read("sublayers/%s/nodepages/0.json.gz"%sublayer,slpk))
+	response.content_type = 'application/json'
+	return json.dumps(SubSceneLayerInfo)
+
+@app.route('/<slpk>/SceneServer/layers/<layer>/sublayers/<sublayer>/nodes/<node>')
+@app.route('/<slpk>/SceneServer/layers/<layer>/sublayers/<sublayer>/nodes/<node>/')
+@enable_cors
+def node_info(slpk,layer,sublayer,node):
+	""" Node information JSON """
+	if slpk not in slpks: #Get 404 if slpk doesn't exists
+		abort(404, "Can't found SLPK: %s"%slpk)
+	NodeIndexDocument=json.loads(read("sublayers/%s/nodes/%s/3dNodeIndexDocument.json.gz"%(sublayer,node),slpk))
+	response.content_type = 'application/json'
+	return json.dumps(NodeIndexDocument)
+
+@app.route('/<slpk>/SceneServer/layers/<layer>/sublayers/<sublayer>/nodes/<node>/geometries/<geometry>')
+@app.route('/<slpk>/SceneServer/layers/<layer>/sublayers/<sublayer>/nodes/<node>/geometries/<geometry>/')
+@enable_cors
+def geometry_info(slpk,layer,sublayer,node,geometry):
+	""" Geometry information bin """
+	if slpk not in slpks: #Get 404 if slpk doesn't exists
+		abort(404, "Can't found SLPK: %s"%slpk)
+	response.content_type = 'application/octet-stream; charset=binary'
+	response.content_encoding = 'gzip'
+	return read("sublayers/%s/nodes/%s/geometries/%s.bin.gz"%(sublayer,node,geometry),slpk)
+
+@app.route('/<slpk>/SceneServer/layers/<layer>/sublayers/<sublayer>/nodes/<node>/textures/0_0')
+@app.route('/<slpk>/SceneServer/layers/<layer>/sublayers/<sublayer>/nodes/<node>/textures/0_0/')
+@enable_cors
+def textures_info(slpk,layer,sublayer,node):
+	""" Texture information JPG """
+	if slpk not in slpks: #Get 404 if slpk doesn't exists
+		abort(404, "Can't found SLPK: %s"%slpk)
+
+	response.headers['Content-Disposition'] = 'attachment; filename="0_0.jpg"'
+	response.content_type = 'image/jpeg'
+	try:
+		return read("sublayers/%s/nodes/%s/textures/0_0.jpg"%(sublayer,node),slpk)
+	except:
+		try:
+			return read("sublayers/%s/nodes/%s/textures/0_0.bin"%(sublayer,node),slpk)
+		except: 
+			return ""
+
+@app.route('/<slpk>/SceneServer/layers/<layer>/sublayers/<sublayer>/nodes/<node>/textures/0_0_1')
+@app.route('/<slpk>/SceneServer/layers/<layer>/sublayers/<sublayer>/nodes/<node>/textures/0_0_1/')
+@enable_cors
+def Ctextures_info(slpk,layer,sublayer,node):
+	""" Compressed texture information """
+	if slpk not in slpks: #Get 404 if slpk doesn't exists
+		abort(404, "Can't found SLPK: %s"%slpk)
+	try:
+		return read("sublayers/%s/nodes/%s/textures/0_0_1.bin.dds.gz"%(sublayer,node),slpk)
+	except:
+		return ""
+
+@app.route('/<slpk>/SceneServer/layers/<layer>/sublayers/<sublayer>/nodes/<node>/features/<feature>')
+@app.route('/<slpk>/SceneServer/layers/<layer>/sublayers/<sublayer>/nodes/<node>/features/<feature>/')
+@enable_cors
+def feature_info(slpk,layer,sublayer,node,feature):
+	""" Feature information JSON """
+	if slpk not in slpks: #Get 404 if slpk doesn't exists
+		abort(404, "Can't found SLPK: %s"%slpk)
+	print("%s")
+	FeatureData=json.loads(read("sublayers/%s/nodes/%s/features/%s.json.gz"%(sublayer,node,feature),slpk))
+	response.content_type = 'application/json'
+	return json.dumps(FeatureData)
+
+@app.route('/<slpk>/SceneServer/layers/<layer>/sublayers/<sublayer>/nodes/<node>/shared')
+@app.route('/<slpk>/SceneServer/layers/<layer>/sublayers/<sublayer>/nodes/<node>/shared/')
+@enable_cors
+def shared_info(slpk,layer,sublayer,node):
+	""" Shared node information JSON """
+	if slpk not in slpks: #Get 404 if slpk doesn't exists
+		abort(404, "Can't found SLPK: %s"%slpk)
+	try:
+		Sharedressource=json.loads(read("sublayers/%s/nodes/%s/shared/sharedResource.json.gz"%(sublayer,node),slpk))
+		response.content_type = 'application/json'
+		return json.dumps(Sharedressource)
+	except:
+		return ""
+		
+@app.route('/<slpk>/SceneServer/layers/<layer>/sublayers/<sublayer>/nodes/<node>/attributes/<attribute>/0')
+@app.route('/<slpk>/SceneServer/layers/<layer>/sublayers/<sublayer>/nodes/<node>/attributes/<attribute>/0/')
+@enable_cors
+def attribute_info(slpk,layer,sublayer,node,attribute):
+	""" Attribute information JSON """
+	if slpk not in slpks: #Get 404 if slpk doesn't exists
+		abort(404, "Can't found SLPK: %s"%slpk)
+	return read("sublayers/%s/nodes/%s/attributes/%s/0.bin.gz"%(sublayer,node,attribute),slpk)
+
+@app.route('/<slpk>/SceneServer/layers/<layer>/nodepages/<nodepage>')
+@app.route('/<slpk>/SceneServer/layers/<layer>/nodepages/<nodepage>/')
+@enable_cors
+def layer_info(slpk,layer,nodepage):
+	""" Layer information JSON """
+	if slpk not in slpks: #Get 404 if slpk doesn't exists
+		abort(404, "Can't found SLPK: %s"%slpk)
+	SubSceneLayerInfo=json.loads(read("nodepages/0.json.gz",slpk))
+	response.content_type = 'application/json'
+	return json.dumps(SubSceneLayerInfo)
+
 @app.route('/<slpk>/SceneServer/layers/<layer>/nodes/<node>')
 @app.route('/<slpk>/SceneServer/layers/<layer>/nodes/<node>/')
 @enable_cors
