@@ -42,12 +42,21 @@ from bottlepy.bottle import app, route, run, template, abort, response
 from io import BytesIO
 import os, sys, json, gzip, zipfile
 
+import mtwsgi
+
 #User parameter
 host='localhost'
 port=5012
 slpkFolder="slpk"
 home=os.path.join(os.path.dirname(os.path.realpath(__file__)),slpkFolder) #SLPK Folder
+thread_count=4
 
+#https://github.com/RonRothman/mtwsgi/blob/master/mtbottle.py
+class MTServer(bottle.ServerAdapter):
+    def run(self, handler):
+        thread_count = self.options.pop('thread_count', None)
+        server = mtwsgi.make_server(self.host, self.port, handler, thread_count, **self.options)
+        server.serve_forever()
 
 #*********#
 #Functions#
@@ -361,4 +370,8 @@ def carte(slpk):
 		abort(404, ex_value)
 
 #Run server
-app.run(host=host, port=port)
+#app.run(host=host, port=port)
+
+# Around 10% faster
+#https://stackoverflow.com/questions/20824218/how-to-implement-someasyncworker-from-bottle-asynchronous-primer
+app.run(server=MTServer, host=host, port=port, thread_count=thread_count)
